@@ -14,6 +14,10 @@ const Navbar = () => {
         // console.log(location);
     }, [location]);
 
+    const handlelogout = () => {
+        localStorage.removeItem('token');
+        window.location.href = "/login";
+    }
 
     return (
         <>
@@ -34,10 +38,10 @@ const Navbar = () => {
                             </li>
 
                         </ul>
-                        <form className="d-flex" role="search">
-                            <input className="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
-                            <button className="btn btn-outline-success" type="submit">Search</button>
-                        </form>
+                        {!localStorage.getItem('token') ? <form className="d-flex" role="search">
+                            <Link className="btn btn-primary mx-3" to="/login" role="button">Login</Link>
+                            <Link className="btn btn-primary " to="/signup" role="button">SignUp</Link>
+                        </form> : <button onClick={handlelogout} className='btn btn-primary'>LogOut</button>}
                     </div>
                 </div>
             </nav>

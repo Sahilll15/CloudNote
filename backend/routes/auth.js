@@ -4,8 +4,8 @@ const User = require('../models/user');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs')
 var jwt = require('jsonwebtoken');
-const JWT_SECRET = 'iamsahilchalke'
-var fetchuser = require('../middleware/fetchUser')
+const JWT_SECRET = 'iamsahilchalke';
+var fetchuser = require('../middleware/fetchuser')
 
 
 
@@ -20,9 +20,10 @@ router.post('/createUser', [
         .matches(/[A-Z]/).withMessage('Password should contain at least one uppercase letter')
         .matches(/[a-z]/).withMessage('Password should contain at least one lowercase letter')
 ], async (req, res) => {
+    let success = false
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        return res.status(400).json({ success, errors: errors.array() });
     }
 
     const { name, email, password, Date } = req.body;
@@ -30,13 +31,14 @@ router.post('/createUser', [
     if (user) {
 
 
-        return res.status(400).json({ errors: [{ msg: 'User already exists' }] });
+        return res.status(400).json({ success, errors: [{ msg: 'User already exists' }] });
     }
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = await User.create({ name, email, password: hashedPassword, Date });
         const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
-        res.status(200).json({ user: user, token });
+        success = true
+        res.status(200).json({ success, user: user, token });
     } catch (error) {
         res.status(500).json({ error: 'An error occurred while creating the user.' });
     }
@@ -67,7 +69,8 @@ router.post('/login', [
 
         const passwordcompare = await bcrypt.compare(password, user.password);
         if (!passwordcompare) {
-            return res.status(400).json({ "error": "incorrect credentials" })
+            success = false
+            return res.status(400).json({ success, "error": "incorrect credentials" })
         }
 
         const payload = {
@@ -76,7 +79,8 @@ router.post('/login', [
             }
         }
         const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
-        res.json({ token: token })
+        success = true
+        res.json({ success, token: token })
     } catch (err) {
         console.error(err)
         res.status(500).send('Internal server error');
@@ -96,7 +100,8 @@ router.post('/getUser', [
         const user = await User.findById(userId).select('-password')
         res.json(user)
     } catch (error) {
-        console.error(err)
+
+        console.error(error)
         res.status(500).send('Internal server error');
     }
 

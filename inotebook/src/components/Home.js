@@ -5,14 +5,13 @@ import addNote from './Addnote'
 
 
 
-const Home = () => {
-    const context = useContext(NoteContext)
-    const { notes } = context
+const Home = (props) => {
 
+    const { showAlert } = props;
     return (
         < >
 
-            <Notes key={notes.id} />
+            <Notes showAlert={showAlert} />
         </>
     )
 }
